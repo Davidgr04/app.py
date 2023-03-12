@@ -70,9 +70,15 @@ def checkUser(user,password):
 
 # cresteUser: crea un nuevo usuario en la BD
 def createUser(user,password,name,surname1,surname2,age,genre):
-    
-    return
-
+    bd = connectBD()
+    cursor = bd.cursor()
+    query_1 = "insert into users (user,password,name,surname1,surname2,age,genre) value (%s,%s,%s,%s,%s,%s,%s)"
+    val_1 = user, password, name, surname1, surname2, age, genre
+    cursor.execute(query_1, val_1)
+    nuevoUsuario = cursor.rowcount
+    bd.commit()
+    bd.close()
+    return nuevoUsuario
 # Secuencia principal: configuración de la aplicación web ##########################################
 # Instanciación de la aplicación web Flask
 app = Flask(__name__)
@@ -91,23 +97,6 @@ def login():
 def signin():
     return render_template("signin.html")
 
-@app.route("/rebre_i_procesar",methods=('GET', 'POST'))
-def rebre_i_procesar():
-    if request.method == ('POST'):
-        formData = request.form
-        user=formData['usuario']
-        password=formData['contrasena']
-        name=formData['nombre']
-        surname1=formData['apellido1']
-        surname2=formData['apellido2']
-        age=formData['edad']
-        userData = checkUser(user,password,name,surname1,surname2,age)
-
-        if userData == False:
-            return render_template("createUser.7epi",login=False)
-        else:
-            return render_template("results.html",login=True,userData=userData)
-
 @app.route("/results",methods=('GET', 'POST'))
 def results():
     if request.method == ('POST'):
@@ -120,6 +109,25 @@ def results():
             return render_template("results.html",login=False)
         else:
             return render_template("results.html",login=True,userData=userData)
+        
+@app.route("/newUser",methods=('GET', 'POST'))      
+def newUser():
+    if request.method == ('POST'):
+        formData = request.form
+        user=formData['usuario']
+        password=formData['contrasena']
+        name=formData['nombre']
+        surname1=formData['apellido1']
+        surname2=formData['apellido2']
+        age=formData['edad']
+        genre=formData['salario']
+        
+        userData = createUser(user,password,name,surname1,surname2,age,genre)
+
+        if userData == False:
+            return render_template("home.html")
+        else:
+            return render_template("results.html")
         
 # Configuración y arranque de la aplicación web
 app.config['TEMPLATES_AUTO_RELOAD'] = True
